@@ -27,10 +27,12 @@ jobs:
     - name: Download KernelPatch Framework
       run: |
         git clone --depth 1 https://github.com/bmax121/KernelPatch.git kpatch
-        # The KPM Makefile expects the framework in a specific path. Let's link it.
-        ln -s $PWD/kpatch/kernel/include $PWD/kernel/include
-        mkdir -p $PWD/kernel/patch
-        ln -s $PWD/kpatch/kernel/patch/include $PWD/kernel/patch/include
+        # Create the expected directory structure
+        mkdir -p kernel/include
+        mkdir -p kernel/patch/include
+        # Safely copy the headers over instead of using symbolic links
+        cp -r kpatch/kernel/include/* kernel/include/
+        cp -r kpatch/kernel/patch/include/* kernel/patch/include/
 
     - name: Compile KPM
       run: |
