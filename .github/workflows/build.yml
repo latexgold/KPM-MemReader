@@ -26,10 +26,8 @@ jobs:
 
     - name: Download KernelPatch Framework (ZIP)
       run: |
-        # Download the ZIP instead of git clone
         wget https://github.com/bmax121/KernelPatch/archive/refs/heads/main.zip -O kpatch.zip
         unzip kpatch.zip
-        # The zip extracts to KernelPatch-main
         mkdir -p kernel/include
         mkdir -p kernel/patch/include
         cp -r KernelPatch-main/kernel/include/* kernel/include/
