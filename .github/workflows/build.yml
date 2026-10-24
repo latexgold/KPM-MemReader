@@ -16,23 +16,24 @@ jobs:
     - name: Install Toolchain & Dependencies
       run: |
         sudo apt-get update
-        # This installs the official Ubuntu aarch64 compiler
-        sudo apt-get install -y build-essential gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu wget
+        sudo apt-get install -y build-essential gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu wget unzip
 
     - name: Setup Compiler Path
       run: |
-        # Create a fake "aarch64-none-elf-gcc" that just points to the Ubuntu one
         sudo ln -sf /usr/bin/aarch64-linux-gnu-gcc /usr/local/bin/aarch64-none-elf-gcc
         sudo ln -sf /usr/bin/aarch64-linux-gnu-ld /usr/local/bin/aarch64-none-elf-ld
         sudo ln -sf /usr/bin/aarch64-linux-gnu-objcopy /usr/local/bin/aarch64-none-elf-objcopy
 
-    - name: Download KernelPatch Framework
+    - name: Download KernelPatch Framework (ZIP)
       run: |
-        git clone --depth 1 https://github.com/bmax121/KernelPatch.git kpatch
+        # Download the ZIP instead of git clone
+        wget https://github.com/bmax121/KernelPatch/archive/refs/heads/main.zip -O kpatch.zip
+        unzip kpatch.zip
+        # The zip extracts to KernelPatch-main
         mkdir -p kernel/include
         mkdir -p kernel/patch/include
-        cp -r kpatch/kernel/include/* kernel/include/
-        cp -r kpatch/kernel/patch/include/* kernel/patch/include/
+        cp -r KernelPatch-main/kernel/include/* kernel/include/
+        cp -r KernelPatch-main/kernel/patch/include/* kernel/patch/include/
 
     - name: Compile KPM
       run: |
