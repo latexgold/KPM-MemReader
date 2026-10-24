@@ -13,25 +13,18 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Free Disk Space
-      run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /opt/ghc
-        sudo rm -rf "/usr/local/share/boost"
-        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-        df -h
-
-    - name: Install dependencies
+    - name: Install Toolchain & Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential wget xz-utils
+        # This installs the official Ubuntu aarch64 compiler
+        sudo apt-get install -y build-essential gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu wget
 
-    - name: Download Toolchain
+    - name: Setup Compiler Path
       run: |
-        # Official ARM mirror hosted on GitHub (works instantly)
-        wget https://github.com/actions/arm-toolchain/releases/download/10.3-2021.07/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
-        tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
-        echo "$PWD/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin" >> $GITHUB_PATH
+        # Create a fake "aarch64-none-elf-gcc" that just points to the Ubuntu one
+        sudo ln -sf /usr/bin/aarch64-linux-gnu-gcc /usr/local/bin/aarch64-none-elf-gcc
+        sudo ln -sf /usr/bin/aarch64-linux-gnu-ld /usr/local/bin/aarch64-none-elf-ld
+        sudo ln -sf /usr/bin/aarch64-linux-gnu-objcopy /usr/local/bin/aarch64-none-elf-objcopy
 
     - name: Download KernelPatch Framework
       run: |
