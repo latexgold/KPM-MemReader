@@ -1,0 +1,45 @@
+name: Build KPM
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential wget
+
+    - name: Download Toolchain
+      run: |
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        echo "$PWD/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin" >> $GITHUB_PATH
+
+    - name: Download KernelPatch Framework
+      run: |
+        git clone --depth 1 https://github.com/bmax121/KernelPatch.git kpatch
+        # The KPM Makefile expects the framework in a specific path. Let's link it.
+        ln -s $PWD/kpatch/kernel/include $PWD/kernel/include
+        mkdir -p $PWD/kernel/patch
+        ln -s $PWD/kpatch/kernel/patch/include $PWD/kernel/patch/include
+
+    - name: Compile KPM
+      run: |
+        # Match the variable expected by the Makefile
+        export TARGET_COMPILE=aarch64-none-elf-
+        make
+
+    - name: Upload KPM Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Kernel_Hack_kpm
+        path: Kernel_Hack.kpm
