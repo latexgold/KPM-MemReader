@@ -13,6 +13,14 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
+    - name: Free Disk Space
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        df -h
+
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -20,23 +28,21 @@ jobs:
 
     - name: Download Toolchain
       run: |
-        wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
-        tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        # Switched to tar.gz for instant extraction
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.gz
+        tar -xzf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.gz
         echo "$PWD/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin" >> $GITHUB_PATH
 
     - name: Download KernelPatch Framework
       run: |
         git clone --depth 1 https://github.com/bmax121/KernelPatch.git kpatch
-        # Create the expected directory structure
         mkdir -p kernel/include
         mkdir -p kernel/patch/include
-        # Safely copy the headers over instead of using symbolic links
         cp -r kpatch/kernel/include/* kernel/include/
         cp -r kpatch/kernel/patch/include/* kernel/patch/include/
 
     - name: Compile KPM
       run: |
-        # Match the variable expected by the Makefile
         export TARGET_COMPILE=aarch64-none-elf-
         make
 
