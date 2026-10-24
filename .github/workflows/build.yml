@@ -13,29 +13,30 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install Toolchain & Dependencies
+    - name: Install Toolchain
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu wget unzip
 
-    - name: Setup Compiler Path
-      run: |
-        sudo ln -sf /usr/bin/aarch64-linux-gnu-gcc /usr/local/bin/aarch64-none-elf-gcc
-        sudo ln -sf /usr/bin/aarch64-linux-gnu-ld /usr/local/bin/aarch64-none-elf-ld
-        sudo ln -sf /usr/bin/aarch64-linux-gnu-objcopy /usr/local/bin/aarch64-none-elf-objcopy
-
-    - name: Download KernelPatch Framework (ZIP)
+    - name: Download KernelPatch (Zip)
       run: |
         wget https://github.com/bmax121/KernelPatch/archive/refs/heads/main.zip -O kpatch.zip
         unzip kpatch.zip
-        mkdir -p kernel/include
-        mkdir -p kernel/patch/include
+        mkdir -p kernel/include kernel/patch/include
         cp -r KernelPatch-main/kernel/include/* kernel/include/
         cp -r KernelPatch-main/kernel/patch/include/* kernel/patch/include/
 
     - name: Compile KPM
       run: |
+        # Instead of symlinks, we create a wrapper script in a writable directory
+        mkdir -p $HOME/bin
+        echo '#!/bin/bash' > $HOME/bin/aarch64-none-elf-gcc
+        echo 'exec aarch64-linux-gnu-gcc "$@"' >> $HOME/bin/aarch64-none-elf-gcc
+        chmod +x $HOME/bin/aarch64-none-elf-gcc
+        
+        export PATH=$HOME/bin:$PATH
         export TARGET_COMPILE=aarch64-none-elf-
+        
         make
 
     - name: Upload KPM Artifact
