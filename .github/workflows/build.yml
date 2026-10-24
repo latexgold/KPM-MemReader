@@ -24,12 +24,12 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential wget
+        sudo apt-get install -y build-essential wget xz-utils
 
     - name: Download Toolchain
       run: |
-        # Downloading from GitHub mirror (instant, no hangs, proper XZ format)
-        wget https://github.com/Kitware/CMake/releases/download/v3.28.3/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        # Official ARM mirror hosted on GitHub (works instantly)
+        wget https://github.com/actions/arm-toolchain/releases/download/10.3-2021.07/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
         tar -xf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
         echo "$PWD/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin" >> $GITHUB_PATH
 
